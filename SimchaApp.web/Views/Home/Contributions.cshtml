@@ -1,0 +1,13 @@
+﻿@using SimchaApp.web.Models 
+@using SimchaApp.data
+@model ListOfContributorsForSimchaModel
+
+<div class="left">
+    <h1>Contributor list for the @Model.Simcha.Name simcha</h1>
+    <ul>
+        @foreach (string name in Model.Names)
+        {
+            <li>@name</li>
+        }
+    </ul>
+</div>

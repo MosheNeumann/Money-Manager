@@ -1,0 +1,155 @@
+﻿@using SimchaApp.web.Models
+@using SimchaApp.data
+@model ContributorViewModel
+
+
+@if (Model.TempDataMessage != null)
+{
+<div class="alert alert-success">
+    <h3>@Model.TempDataMessage</h3>
+</div>
+}
+
+<div class="container">
+    <div class="contributors-index">
+        <div class="page-header text-center">
+            <h1>Contributors</h1>
+        </div>
+        <div class="row">
+            <div class="col-m2">
+                <button class="btn btn-danger" id="new-contributor">New Contributor</button>
+           </div>
+            <div class="text-center">
+                <input type="text" class="input-sm" placeholder="Search" id="search" />
+                <button class="btn btn-danger" id="clear">Clear</button>
+            </div> 
+            <div>
+                <h3 class="text-right">Total $@Model.TotalInFund</h3>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <tr>
+                    <th>Deposit</th>
+                    <th>Name</th>
+                    <th>Cell</th>
+                    <th>Balance</th>
+                    <th>Always Include</th>
+                    <th>Action</th>
+                </tr>
+            @foreach(Contributor C in Model.AllContributors)
+            {
+                <tr>
+                    <td><button data-id="@C.Id"  class="btn btn-danger Deposit-Model">Deposit</button> </td>
+                    <td>@C.Name</td>
+                    <td>@C.Cell</td>
+                    <td>@C.Balance</td>
+                    <td class="text-center">@if (C.AlwaysInclude)
+                    {
+                             <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+                    }
+                    </td>
+                    <td><a href="/Home/History?id=@C.Id"class="btn btn-success">View History</a></td>
+                </tr>
+
+            }
+
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!-- Deposit Modal -->
+<div class="modal fade" id="Deposit-Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Deposit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form  action="/Home/Deposit" method="post">
+                    <input type="hidden"value="" id="Contributor-id"name="ContributorsId" />
+                    <input type="text"class="form-control"name="Amount" />
+                    <br />
+                    <input type="date"class="form-control"name="Date" />
+                    <br />
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input class="btn btn-primary" name="commit" type="submit" value="Save">
+                    </div>
+                </form>
+            </div>
+           
+        </div>
+    </div>
+</div>
+
+
+<!--New Contributor Modal -->
+<div class="modal fade" id="Contributor-Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New Contributor</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/Home/AddContributor">
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>First Name</label>
+                            <input type="text" name="Name" class="form-control" placeholder="First Name" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Last Name</label>
+                            <input type="text" class="form-control" name="LastName" placeholder="Last Name" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Cell #</label>
+                            <input type="text" name="Cell" class="form-control" placeholder="Cell" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Initial Deposit</label>
+                            <input type="text" class="form-control" name="Amount" placeholder="Initial Deposit" />
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label>Date Created</label>
+                            <input type="date" name="Date" class="form-control" placeholder="Date" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Include in all Simchas</label>
+                            <input type="checkbox" class="form-control" name="AlwaysInclude" placeholder="Include in all Simchas" value="true"/>
+                            <input type="hidden"name="AlwaysInclude"value="false" />
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input class="btn btn-primary" name="commit" type="submit" value="Save">
+                    </div>
+                </form>
+                    </div>
+               
+            </div>
+            
+        </div>
+    </div>
+@*</div>*@
+
+@section scripts
+{
+
+    <script src="/Scripts/ModalJS.js"></script>
+    <script src="~/Scripts/JSSearchFile.js"></script>
+}

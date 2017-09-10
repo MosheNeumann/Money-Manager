@@ -1,0 +1,60 @@
+﻿@using SimchaApp.web.Models
+@using SimchaApp.data
+@model ContributorsForSimchas
+
+    <div class="container">
+    <div class="header">
+        <h1>Contributors for the @Model.Simcha.Name simcha</h1>
+    </div>
+    <form method="post"action="/Home/PledgesForSimcha">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <tr>
+                    <th>Contribute</th>
+                    <th>Name</th>
+                    <th>Balance</th>
+                    <th>Always Include</th>
+                    <th>Amount</th>
+                </tr>
+               
+                @for (int i = 0; i < Model.List.Count; i++)
+
+               {
+                    <tr>
+                        <td><input type="checkbox" class="switch" name="ContributorList[@i].Contribute" value="true" checked="@Model.List[i].PledgedForSimcha" /><input type="hidden" name="ContributorList[@i].Contribute" value="false" /></td>
+                        <td class="text-center"><span>@Model.List[i].Name</span> </td>
+                        <td class="text-center"><span>@Model.List[i].Balance</span></td>
+                        <td class="text-center">
+                            @if (@Model.List[i].AlwaysInclude)
+                            {
+                                <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+                            }
+
+
+                         </td>
+                        <td><input type="text" name="ContributorList[@i].Amount" value="@Model.List[i].Amount" /></td>
+                        <td hidden><input type="hidden" name="ContributorList[@i].ContributersId" value="@Model.List[i].Id" /></td>
+                        <td hidden><input type="hidden" name="ContributorList[@i].SimchaId" value="@Model.Simcha.Id" /></td>
+                        <td hidden><input type="hidden"name="ContributorList[@i].date"value="@Model.List[i].Date" /></td>
+
+                    </tr>
+                }
+                @*@foreach (ContributorsForSimcha C in Model.List)
+                {
+                    <tr>
+                        <td><input type="checkbox" class="switch" name="ContributorList[@Model.index].PledgedForSimcha" value="true" checked="@C.PledgedForSimcha" /><input type="hidden"name="ContributorList[@Model.index].PledgedForSimcha" value="false" /></td>
+                        <td class="text-center"><span>@C.Name</span> </td>
+                        <td class="text-center"><span>@C.Balance</span></td>
+                        <td class="text-center">(@C.AlwaysInclude? <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>):"") </td>
+                        <td><input type="text"name="ContributorList[@Model.index].Amount"value="@C.Amount" /></td>
+                        <td><input type="hidden"name="ContributorList[@Model.index].ContributersId"value="@C.Id" /></td>
+                        <td><input type="hidden" name="ContributorList[@Model.index].SimchaId" value="@Model.Simcha.Id" /></td>
+                       
+                    </tr>*@
+                    
+                
+            </table>
+        </div>
+        <button class="btn btn-primary">Submit</button>
+    </form>
+    </div>
