@@ -103,13 +103,14 @@ namespace SimchaApp.web.Controllers
             DB db = new DB(Properties.Settings.Default.ConnectionString);
             ContributorsForSimchas ContributorsList = new ContributorsForSimchas();
             ContributorsList.Simcha = db.GetSimchaByID(id);
-            ContributorsList.List = db.ContributorsList(id);
+            ContributorsList.List = db.ContributorsListForSImcha(id);
 
             return View(ContributorsList);
                
         }
         public ActionResult PledgesForSimcha(List<Contribution> ContributorList)
         {
+            int x = ContributorList[0].SimchaId;
             List<Contribution> list = new List<Contribution>();
             
             foreach (Contribution C in ContributorList)

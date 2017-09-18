@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SimchaApp.data
 {
-  public  class DB
+    public class DB
     {
         public DB(string connectionString)
         {
@@ -17,189 +17,219 @@ namespace SimchaApp.data
 
         public List<Contributor> GetAllContributors()
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = @"select c.* from Contributors C";
-
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            List<Contributor> AllContributors = new List<Contributor>();
-            while (reader.Read())
+            using (SqlCommand command = connection.CreateCommand())
             {
-                           
-                Contributor C = new Contributor();
-                C.Id = (int)reader["Id"];
-                C.Name = (string)reader["Name"];
-                C.Cell = (string)reader["cell"];
-                C.AlwaysInclude = (bool)reader["AlwaysIncude"];
-              
-                C.Balance = GetBalance(C.Id);
-                AllContributors.Add(C);
+                command.CommandText = @"select c.* from Contributors C";
+
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                List<Contributor> AllContributors = new List<Contributor>();
+                while (reader.Read())
+                {
+
+                    Contributor C = new Contributor();
+                    C.Id = (int)reader["Id"];
+                    C.Name = (string)reader["Name"];
+                    C.Cell = (string)reader["cell"];
+                    C.AlwaysInclude = (bool)reader["AlwaysIncude"];
+
+                    C.Balance = GetBalance(C.Id);
+                    AllContributors.Add(C);
+                }
+                return AllContributors;
             }
-            return AllContributors;
+                
         }
 
         private int GetBalance(int id)
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+           using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "select (select isnull(sum(amount),0) from Deposits where contributorsId= @id) - (select isnull(sum(amount),0) from Contributions where contributersId=@id) as totalbalance";
-            command.Parameters.AddWithValue("@id", id);
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            int x = 0;
-            while (reader.Read())
+            using (SqlCommand command = connection.CreateCommand())
             {
-                
-                    x = (int)(decimal)reader["totalbalance"];
-                
-            }
+                command.CommandText = "select (select isnull(sum(amount),0) from Deposits where contributorsId= @id) - (select isnull(sum(amount),0) from Contributions where contributersId=@id) as totalbalance";
+                command.Parameters.AddWithValue("@id", id);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                int x = 0;
+                while (reader.Read())
+                {
 
-            return x;
+                    x = (int)(decimal)reader["totalbalance"];
+
+                }
+
+                return x;
+            }
+           
         }
         public List<Transaction> ShowHistoryByContributorID(int id)
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT  D.Amount,d.Date,d.name FROM Deposits D WHERE contributorsId=@id
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT  D.Amount,d.Date,d.name FROM Deposits D WHERE contributorsId=@id
                                     UNION ALL
                                    SELECT C.amount,c.date,s.Name  FROM Contributions C
                                      JOIN Simchas S
                                     ON S.Id=C.contributersId
                                      WHERE s.id=@id
                                      ORDER BY DATE";
-            command.Parameters.AddWithValue("@id", id);
-            connection.Open();
-            List<Transaction> AllTransactions = new List<Transaction>();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                AllTransactions.Add(new Transaction
+                command.Parameters.AddWithValue("@id", id);
+                connection.Open();
+                List<Transaction> AllTransactions = new List<Transaction>();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    Action = (string)reader["name"],
-                 Date=(DateTime)reader["Date"],
-                    Amount = (int)(decimal)reader["Amount"]
-                });
-            }       
-            return AllTransactions;
+                    AllTransactions.Add(new Transaction
+                    {
+                        Action = (string)reader["name"],
+                        Date = (DateTime)reader["Date"],
+                        Amount = (int)(decimal)reader["Amount"]
+                    });
+                }
+                return AllTransactions;
+            }
+               
         }
 
         public Contributor GetContributorById(int id)
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = @"select * from Contributors";
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            Contributor C = new Contributor();
-            while (reader.Read())
+            using (SqlCommand command = connection.CreateCommand())
             {
-                C.Id = (int)reader["Id"];
-                C.Name = (string)reader["Name"];
-                C.Cell = (string)reader["cell"];
-                C.AlwaysInclude = (bool)reader["AlwaysIncude"];
-                C.Balance = GetBalance(id);
-            }                          
-            return C;
+                command.CommandText = @"select * from Contributors";
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                Contributor C = new Contributor();
+                while (reader.Read())
+                {
+                    C.Id = (int)reader["Id"];
+                    C.Name = (string)reader["Name"];
+                    C.Cell = (string)reader["cell"];
+                    C.AlwaysInclude = (bool)reader["AlwaysIncude"];
+                    C.Balance = GetBalance(id);
+                }
+                return C;
+            }
+               
 
         }
 
         public void AddContributor(Contributor C)
         {
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Contributors VALUES( @NAME,@CELL,@ALWAYSINCLUDE) SELECT @@IDENTITY";
-            command.Parameters.AddWithValue("@NAME", C.Name);
-            command.Parameters.AddWithValue("@CELL", C.Cell);
-            command.Parameters.AddWithValue("@ALWAYSINCLUDE", C.AlwaysInclude);
-            connection.Open();
-            C.Id = (int)(Decimal)command.ExecuteScalar();
+            using (SqlCommand command = connection.CreateCommand())
+            {
 
+                command.CommandText = "INSERT INTO Contributors VALUES( @NAME,@CELL,@ALWAYSINCLUDE) SELECT @@IDENTITY";
+                command.Parameters.AddWithValue("@NAME", C.Name);
+                command.Parameters.AddWithValue("@CELL", C.Cell);
+                command.Parameters.AddWithValue("@ALWAYSINCLUDE", C.AlwaysInclude);
+                connection.Open();
+                C.Id = (int)(Decimal)command.ExecuteScalar();
+
+            }
         }
         public void AddContribution(Contribution contribution)
         {
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Contributions VALUES( @contributersId,@SimchaId,@Amount)";
-            command.Parameters.AddWithValue("@contributersId", contribution.ContributersId);
-            command.Parameters.AddWithValue("@SimchaId", contribution.SimchaId);
-            command.Parameters.AddWithValue("@Amount", contribution.Amount);
-            connection.Open();
-            command.ExecuteNonQuery();
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "INSERT INTO Contributions VALUES( @contributersId,@SimchaId,@Amount)";
+                command.Parameters.AddWithValue("@contributersId", contribution.ContributersId);
+                command.Parameters.AddWithValue("@SimchaId", contribution.SimchaId);
+                command.Parameters.AddWithValue("@Amount", contribution.Amount);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+               
         }
         public void AddDeposit(Deposit deposit)
         {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "INSERT INTO Deposits VALUES(@AMOUNT,@DATE,@CONTRIBUTORSID, @NAME) SELECT @@IDENTITY";
+                command.Parameters.AddWithValue("@AMOUNT", deposit.Amount);
+                command.Parameters.AddWithValue("@DATE", deposit.Date);
+                command.Parameters.AddWithValue("@CONTRIBUTORSID", deposit.ContributorsId);
+                command.Parameters.AddWithValue("@NAME", "Deposit");
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Deposits VALUES(@AMOUNT,@DATE,@CONTRIBUTORSID, @NAME) SELECT @@IDENTITY";
-            command.Parameters.AddWithValue("@AMOUNT", deposit.Amount);
-            command.Parameters.AddWithValue("@DATE", deposit.Date);
-            command.Parameters.AddWithValue("@CONTRIBUTORSID", deposit.ContributorsId);
-            command.Parameters.AddWithValue("@NAME", "Deposit");
-
-            connection.Open();
-            deposit.Id = (int)(decimal)command.ExecuteScalar();
+                connection.Open();
+                deposit.Id = (int)(decimal)command.ExecuteScalar();
+            }
+               
         }
-        public void AddNewSimcha (Simcha simcha)
+        public void AddNewSimcha(Simcha simcha)
         {
 
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Simchas VALUES(@Name,@Date) SELECT @@IDENTITY";
-            command.Parameters.AddWithValue("@Name", simcha.Name);
-            command.Parameters.AddWithValue("@DATE", simcha.Date);
-            connection.Open();
-            simcha.Id = (int)(decimal)command.ExecuteScalar();
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "INSERT INTO Simchas VALUES(@Name,@Date) SELECT @@IDENTITY";
+                command.Parameters.AddWithValue("@Name", simcha.Name);
+                command.Parameters.AddWithValue("@DATE", simcha.Date);
+                connection.Open();
+                simcha.Id = (int)(decimal)command.ExecuteScalar();
+            }
+                
         }
         public int GetTotalCurrentlyInFund()
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "select (select sum(Amount) from Deposits) -  (select sum(amount) from Contributions) as TotalInFund"; 
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "select (select sum(Amount) from Deposits) -  (select sum(amount) from Contributions) as TotalInFund";
 
-            connection.Open();
-            int TotalInFund = (int)(decimal)command.ExecuteScalar();
+                connection.Open();
+                int TotalInFund = (int)(decimal)command.ExecuteScalar();
+                return TotalInFund;
+            }
+              
 
-            return TotalInFund;
+           
         }
         public List<Simcha> GetAllSimchas()
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT S.*,COUNT(C.contributersId) AS ContributorCount,SUM(C.AMOUNT) as Total FROM Simchas S
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT S.*,COUNT(C.contributersId) AS ContributorCount,SUM(C.AMOUNT) as Total FROM Simchas S
                                  left   JOIN Contributions C
                                      ON C.SimchaId=S.ID
                                     GROUP BY S.Id,S.Date,S.Name ";
-            connection.Open();
-            List<Simcha> AllSimchas = new List<Simcha>();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Simcha S = new Simcha();
-                S.Name = (string)reader["Name"];
-                S.Id = (int)reader["Id"];
-                S.Date = (DateTime)reader["Date"];
-                S.ContributorCount = (int)reader["ContributorCount"];
-                if(reader["Total"] != DBNull.Value)
+                connection.Open();
+                List<Simcha> AllSimchas = new List<Simcha>();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
                 {
-                    S.Total = (int)(decimal)reader["Total"];
+                    Simcha S = new Simcha();
+                    S.Name = (string)reader["Name"];
+                    S.Id = (int)reader["Id"];
+                    S.Date = (DateTime)reader["Date"];
+                    S.ContributorCount = (int)reader["ContributorCount"];
+                    if (reader["Total"] != DBNull.Value)
+                    {
+                        S.Total = (int)(decimal)reader["Total"];
+                    }
+                    AllSimchas.Add(S);
                 }
-                AllSimchas.Add(S);
+                return AllSimchas;
             }
-            return AllSimchas;
+               
         }
 
         public int TotalContributors()
@@ -215,7 +245,7 @@ namespace SimchaApp.data
 
             return total;
         }
-        public List<string> GetContributorsForSimchaList (int id)
+        public List<string> GetContributorsForSimchaList(int id)
         {
             SqlConnection connection = new SqlConnection(_connectionString);
 
@@ -225,7 +255,7 @@ namespace SimchaApp.data
                                    on c.Id=co.contributersId
                                    group by c.Name,co.SimchaId  
                                  having co.SimchaId=@id ";
-            command.Parameters.AddWithValue("@id",id);
+            command.Parameters.AddWithValue("@id", id);
             connection.Open();
             List<string> names = new List<string>();
             SqlDataReader reader = command.ExecuteReader();
@@ -237,7 +267,7 @@ namespace SimchaApp.data
             }
             return names;
         }
-        
+
         public Simcha GetSimchaByID(int id)
         {
             SqlConnection connection = new SqlConnection(_connectionString);
@@ -255,50 +285,15 @@ namespace SimchaApp.data
                 S.Date = (DateTime)reader["Date"];
             }
             return S;
-        } 
-
-        public List<ContributorsForSimcha>ContributorsList(int SimchaID)
-        {
-
-            SqlConnection connection = new SqlConnection(_connectionString);
-
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = @"select c.id,c.Name,c.AlwaysIncude,co.SimchaId,co.Amount from Contributors C
-                                    left join Contributions CO
-                                     on  c.Id=co.contributersId
-                                   group by c.id,c.Name,c.AlwaysIncude,co.SimchaId,co.Amount";
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            List<ContributorsForSimcha> ContributorList = new List<ContributorsForSimcha>();
-            while (reader.Read())
-            {
-                ContributorsForSimcha Contributor = new ContributorsForSimcha();
-                Contributor.Id = (int)reader["id"];
-                Contributor.Name = (string)reader["Name"];
-                Contributor.AlwaysInclude = (bool)reader["AlwaysIncude"];
-                Contributor.Balance = GetBalance((int)reader["id"]);
-                if(reader["Simchaid"]!= DBNull.Value)
-                {
-
-                    if ((int)reader["Simchaid"] == SimchaID)
-                    {
-                        Contributor.PledgedForSimcha = true;
-                        Contributor.Amount = (int)(decimal)reader["Amount"];
-                        Contributor.Date = GetDateForContribution((int)reader["Simchaid"], (int)reader["id"]);
-
-                    }
-                }
-
-                ContributorList.Add(Contributor);
-            }
-            return ContributorList;
         }
+
+
         public void PostcontributionsForSimcha(List<Contribution> List)
         {
             DeletecontributionsFromSimchaBySimchaId(List[0].SimchaId);
 
 
-            
+
             foreach (Contribution C in List)
             {
                 AddContributionsToDB(C);
@@ -309,37 +304,42 @@ namespace SimchaApp.data
         }
         private void DeletecontributionsFromSimchaBySimchaId(int id)
         {
-            SqlConnection connection = new SqlConnection(_connectionString);
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "delete from Contributions where SimchaId=@id";
-            command.Parameters.AddWithValue("@id", id);
-            connection.Open();
-            command.ExecuteNonQuery();
+            using (SqlCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "delete from Contributions where SimchaId=@id";
+                command.Parameters.AddWithValue("@id", id);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+                
         }
 
         private void AddContributionsToDB(Contribution C)
         {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
 
-            SqlConnection connection = new SqlConnection(_connectionString);
-
-            SqlCommand command = connection.CreateCommand();
-            command.CommandText = "insert into Contributions values (@contributersId,@SimchaId,@amount,@date)";
-            command.Parameters.AddWithValue("@contributersId", C.ContributersId);
-            command.Parameters.AddWithValue("@SimchaId", C.SimchaId);
-            command.Parameters.AddWithValue("@amount", C.Amount);
-            if(C.date != null)
+            using (SqlCommand command = connection.CreateCommand())
             {
-                command.Parameters.AddWithValue("@date", C.date);
+                command.CommandText = "insert into Contributions values (@contributersId,@SimchaId,@amount,@date)";
+                command.Parameters.AddWithValue("@contributersId", C.ContributersId);
+                command.Parameters.AddWithValue("@SimchaId", C.SimchaId);
+                command.Parameters.AddWithValue("@amount", C.Amount);
+                if (C.date != default(DateTime))
+                {
+                    command.Parameters.AddWithValue("@date", C.date);
+                }
+                else
+                {
+                    command.Parameters.AddWithValue("@date", DateTime.Now);
+                }
+                connection.Open();
+                command.ExecuteNonQuery();
             }
-            else
-            {
-                command.Parameters.AddWithValue("@date", DateTime.Now);
-            }
-            connection.Open();
-            command.ExecuteNonQuery();
+               
         }
-        public DateTime GetDateForContribution(int SimchaId,int contributorId)
+        public DateTime GetDateForContribution(int SimchaId, int contributorId)
         {
             SqlConnection connection = new SqlConnection(_connectionString);
 
@@ -356,6 +356,55 @@ namespace SimchaApp.data
             }
             return date;
         }
-    }
 
+        public List<ContributorsForSimcha> ContributorsListForSImcha(int SimchaID)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlCommand command = connection.CreateCommand())
+            {
+
+                command.CommandText = "	select * from Contributors";
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                List<ContributorsForSimcha> Result = new List<ContributorsForSimcha>();
+                while (reader.Read())
+                {
+                    ContributorsForSimcha Contributor = new ContributorsForSimcha();
+                    Contributor.Id = (int)reader["id"];
+                    Contributor.Name = (string)reader["Name"];
+                    Contributor.AlwaysInclude = (bool)reader["AlwaysIncude"];
+                    Contributor.Balance = GetBalance((int)reader["id"]);
+                    Contributor.Amount = GetAmountPledgedForSimcha(SimchaID, Contributor.Id);
+                    Contributor.Date = GetDateForContribution(SimchaID, Contributor.Id);
+                    Contributor.PledgedForSimcha = Contributor.Amount != 0 ? true : false;
+                    Result.Add(Contributor);
+                }
+                return Result;
+            }
+        }
+        private int GetAmountPledgedForSimcha(int SimchaId, int PersonId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlCommand command = connection.CreateCommand())
+            {
+
+                command.CommandText = "	select * from Contributions C where c.contributersId= @personId and c.SimchaId =@simchaId";
+                command.Parameters.AddWithValue("@personId", PersonId);
+                command.Parameters.AddWithValue("@simchaId", SimchaId);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    return (int)(decimal)reader["Amount"];
+                }
+                else
+                {
+                    return 0;
+                }
+
+            }
+
+        }
+
+    }
 }
